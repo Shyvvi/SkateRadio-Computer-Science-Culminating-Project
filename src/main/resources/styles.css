@@ -1,0 +1,33 @@
+.root {
+    -fx-font-family: "Segoe UI", "Inter", sans-serif;
+    -fx-background-color: #1e1e1e;
+    -fx-text-fill: #e6e6e6;
+}
+
+
+.button {
+    -fx-background-color: #2d2d2d;
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 6;
+    -fx-padding: 8 14;
+}
+
+
+.button:hover {
+    -fx-background-color: #3a3a3a;
+}
+
+
+.slider .track {
+    -fx-background-color: #444;
+}
+
+
+.slider .thumb {
+    -fx-background-color: #c084fc;
+}
+
+
+.label {
+    -fx-text-fill: #cccccc;
+}

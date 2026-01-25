@@ -1,14 +1,14 @@
 package net.shyvv.core;
 
-import net.shyvv.Main;
+import com.sun.tools.javac.Main;
+import net.shyvv.App;
 
 public interface Ticking {
     default void initTicking() {
-        Main.beginTickingObject(this);
+        App.beginTickingObject(this);
     }
-
     default void tickingError() {
-        Main.stopTickingObject(this);
+        App.stopTickingObject(this);
     }
 
     void tick();
