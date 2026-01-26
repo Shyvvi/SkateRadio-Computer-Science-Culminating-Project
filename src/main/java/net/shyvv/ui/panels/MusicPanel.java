@@ -6,24 +6,25 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import net.shyvv.core.ShyvvButton;
+import net.shyvv.core.ShyvvPanel;
 import net.shyvv.core.Song;
 import net.shyvv.core.Ticking;
+import net.shyvv.ui.PrimaryStage;
 import net.shyvv.util.FileManager;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MusicPanel implements Ticking {
-    Pane panel;
+public class MusicPanel extends ShyvvPanel implements Ticking {
     int tick;
     int TICKING_INTERVAL = 100;
     public static List<Song> storedSongs = new ArrayList<>();
     public static TreeItem<File> rootItem = new TreeItem<>(FileManager.getSystemMusicDirectory());
     private static final TreeView<File> treeView = new TreeView<>(rootItem);
 
-    public MusicPanel(Pane sidePanel) {
-        this.panel = sidePanel;
+    public MusicPanel(PrimaryStage stage) {
+        super(stage);
         initialize();
         initTicking();
     }
@@ -58,8 +59,8 @@ public class MusicPanel implements Ticking {
         FileManager.getDirectories(FileManager.getSystemMusicDirectory());
     }
 
-    public static Media getSelectedSong() {
-        return new Media(treeView.getSelectionModel().getSelectedItem().getValue().toURI().toString());
+    public static String getSelectedSong() {
+        return treeView.getSelectionModel().getSelectedItem().getValue().getAbsolutePath();
     }
 
     @Override
@@ -69,5 +70,10 @@ public class MusicPanel implements Ticking {
             FileManager.getDirectories(FileManager.getSystemMusicDirectory());
             tick = 0;
         }
+    }
+
+    @Override
+    public void tickThreadUI() {
+
     }
 }

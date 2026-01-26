@@ -12,4 +12,5 @@ public interface Ticking {
     }
 
     void tick();
+    void tickThreadUI();
 }

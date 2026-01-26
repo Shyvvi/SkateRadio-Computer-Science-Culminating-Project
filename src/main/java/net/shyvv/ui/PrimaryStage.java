@@ -17,10 +17,14 @@ import net.shyvv.App;
 import net.shyvv.core.ShyvvButton;
 import net.shyvv.ui.panels.CenterPanel;
 import net.shyvv.ui.panels.MusicPanel;
+import net.shyvv.ui.panels.QueuePanel;
 import net.shyvv.util.FileManager;
 
 public class PrimaryStage {
     public MediaPlayer mediaPlayer;
+    public CenterPanel centerPanel = new CenterPanel(this);
+    public QueuePanel queuePanel = new QueuePanel(this);
+    public MusicPanel musicPanel = new MusicPanel(this);
     Stage stage;
     public PrimaryStage(Stage stage) {
         this.stage = stage;
@@ -33,24 +37,12 @@ public class PrimaryStage {
         // SplitPane which will split all the other sections of the app into 3 panes
         SplitPane mainPane = new SplitPane();
 
-        // ------------------ Center Panel (middle) ------------------
-
-        VBox centerPanel = new VBox();
-        new CenterPanel(stage, mediaPlayer, centerPanel);
-        // ------------------ Music Panel (left) ------------------
-        VBox musicPanel = new VBox();
-        new MusicPanel(musicPanel);
-
-        // ------------------ Queue Panel (right) ------------------
-        VBox queuePanel = new VBox();
-
         // ------------------ Build the app ------------------
-        mainPane.getItems().addAll(musicPanel, centerPanel, queuePanel);
+        mainPane.getItems().addAll(musicPanel.getPane(), centerPanel.getPane(), queuePanel.getPane());
 
-
-        centerPanel.setPadding(new Insets(10));
-        musicPanel.setPadding(new Insets(10));
-        queuePanel.setPadding(new Insets(10));
+        centerPanel.getPane().setPadding(new Insets(10));
+        musicPanel.getPane().setPadding(new Insets(10));
+        queuePanel.getPane().setPadding(new Insets(10));
 
         mainPane.setDividerPositions(0.25, 0.85);
 
