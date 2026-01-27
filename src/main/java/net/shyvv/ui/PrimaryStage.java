@@ -25,8 +25,8 @@ import java.awt.*;
 public class PrimaryStage {
     public MediaPlayer mediaPlayer;
     public CenterPanel centerPanel = new CenterPanel(this);
-    public QueuePanel queuePanel = new QueuePanel(this);
     public MusicPanel musicPanel = new MusicPanel(this);
+    public QueuePanel queuePanel = new QueuePanel(this);
     Stage stage;
     public PrimaryStage(Stage stage) {
         this.stage = stage;
@@ -38,15 +38,15 @@ public class PrimaryStage {
 
         // SplitPane which will split all the other sections of the app into 3 panes
         SplitPane mainPane = new SplitPane();
-
+        VBox leftPanel = new VBox(queuePanel.getPane(), musicPanel.getPane());
         // ------------------ Build the app ------------------
-        mainPane.getItems().addAll(musicPanel.getPane(), centerPanel.getPane(), queuePanel.getPane());
+        mainPane.getItems().addAll(leftPanel, centerPanel.getPane());
 
         centerPanel.getPane().setPadding(new Insets(10));
         musicPanel.getPane().setPadding(new Insets(10));
         queuePanel.getPane().setPadding(new Insets(10));
 
-        mainPane.setDividerPositions(0.33, 0.66);
+        mainPane.setDividerPositions(0.4);
 
         Rectangle2D screenSize = Screen.getPrimary().getBounds();
         Scene scene = new Scene(mainPane, screenSize.getWidth()*0.9, screenSize.getHeight()*0.9);

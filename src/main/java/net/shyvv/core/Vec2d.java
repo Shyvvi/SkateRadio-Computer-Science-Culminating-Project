@@ -2,11 +2,14 @@ package net.shyvv.core;
 
 import java.awt.*;
 
+// unfortunately went unused after I switched to using JavaFX :(
+// JavaFX is a lifesaver though, I probably wouldn't have been able to get this project done without it
+@Deprecated
 public class Vec2d {
     private double x;
     private double y;
     /**
-     * Creates an object for storing x and y values
+     * creates an object for storing x and y values
      * @param x x value
      * @param y y value
      */
@@ -16,7 +19,7 @@ public class Vec2d {
     }
 
     /**
-     * Creates an object for storing x and y values
+     * creates an object for storing x and y values
      * @param dimension the Dimension object which will be turned into a Vec2d
      */
     public Vec2d(Dimension dimension) {
@@ -24,7 +27,7 @@ public class Vec2d {
         this.y = dimension.getHeight();
     }
     /**
-     * Creates an object for storing x and y values
+     * creates an object for storing x and y values
      * @param point the Point object which will be turned into a Vec2d
      */
     public Vec2d(Point point) {
@@ -33,7 +36,7 @@ public class Vec2d {
     }
 
     /**
-     * Sets the values of this Vec2d to 0
+     * sets the values of this Vec2d to 0
      */
     public void clear() {
         this.x = 0;
@@ -41,7 +44,7 @@ public class Vec2d {
     }
 
     /**
-     * Returns the x value of this Vec2d
+     * returns the x value of this Vec2d
      * @return this.x
      */
     public double getX() {
@@ -49,7 +52,7 @@ public class Vec2d {
     }
 
     /**
-     * Returns the y value of this Vec2d
+     * returns the y value of this Vec2d
      * @return this.y
      */
     public double getY() {
@@ -57,14 +60,14 @@ public class Vec2d {
     }
 
     /**
-     * Returns the x value of this Vec2d as an integer
+     * returns the x value of this Vec2d as an integer
      * @return this.x casted to an integer
      */
     public int getIntX() {
         return (int) this.x;
     }
     /**
-     * Returns the y value of this Vec2d as an integer
+     * returns the y value of this Vec2d as an integer
      * @return this.y casted to an integer
      */
     public int getIntY() {
@@ -72,7 +75,7 @@ public class Vec2d {
     }
 
     /**
-     * Returns a JSwing Dimension object with the values of this Vec2d
+     * returns a JSwing Dimension object with the values of this Vec2d
      * @return Dimension objects with the x and y values of this Vec2d
      */
     public Dimension getDimension() {
@@ -80,7 +83,7 @@ public class Vec2d {
     }
 
     /**
-     * Returns a JSwing Point object with the values of this Vec2d
+     * returns a JSwing Point object with the values of this Vec2d
      * @return Point objects with the x and y values of this Vec2d
      */
     public Point getPoint() {
@@ -88,7 +91,7 @@ public class Vec2d {
     }
 
     /**
-     * Multiplies both values of this Vec2d by a double
+     * multiplies both values of this Vec2d by a double
      * @param value the value to multiply both the x and y values of this Vec2d
      * @return this Vec2d
      */
@@ -99,7 +102,7 @@ public class Vec2d {
     }
 
     /**
-     * Multiplies the x and y values of this Vec2d by the x and y values of another Vec2d
+     * multiplies the x and y values of this Vec2d by the x and y values of another Vec2d
      * @param vec2d the vector to multiply this vector by
      * @return this Vec2d
      */
@@ -110,7 +113,7 @@ public class Vec2d {
     }
 
     /**
-     * Divides both values of this Vec2d by a double
+     * divides both values of this Vec2d by a double
      * @param value the value to divide both the x and y values of this Vec2d
      * @return this Vec2d
      */
@@ -120,7 +123,7 @@ public class Vec2d {
         return this;
     }
     /**
-     * Divides the x and y values of this Vec2d by the x and y values of another Vec2d
+     * divides the x and y values of this Vec2d by the x and y values of another Vec2d
      * @param vec2d the vector to divide this vector by
      * @return this Vec2d
      */
@@ -131,7 +134,7 @@ public class Vec2d {
     }
 
     /**
-     * Subtracts both values of this Vec2d by a double
+     * subtracts both values of this Vec2d by a double
      * @param value the value to subtract both the x and y values of this Vec2d
      * @return this Vec2d
      */
@@ -141,7 +144,7 @@ public class Vec2d {
         return this;
     }
     /**
-     * Subtracts the x and y values of this Vec2d by the x and y values of another Vec2d
+     * subtracts the x and y values of this Vec2d by the x and y values of another Vec2d
      * @param vec2d the vector to subtract this vector by
      * @return this Vec2d
      */
@@ -152,7 +155,7 @@ public class Vec2d {
     }
 
     /**
-     * Adds both values of this Vec2d by a double
+     * adds both values of this Vec2d by a double
      * @param value the value to add both the x and y values of this Vec2d
      * @return this Vec2d
      */
@@ -162,7 +165,7 @@ public class Vec2d {
         return this;
     }
     /**
-     * Adds the x and y values of this Vec2d by the x and y values of another Vec2d
+     * adds the x and y values of this Vec2d by the x and y values of another Vec2d
      * @param vec2d the vector to add this vector by
      * @return this Vec2d
      */

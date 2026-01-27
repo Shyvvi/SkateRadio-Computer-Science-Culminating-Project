@@ -3,6 +3,7 @@ package net.shyvv.ui.panels;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -20,13 +21,26 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
+    // --------- Constants ---------
+    // the maximum amount of time a Delay in queue can have in seconds (3m)
+    static double DELAY_MAX_SECONDS = 180;
+
+    // --------- Variables ---------
+    // variable for storing the currently loaded song
+    Song loadedSong = null;
+    ObservableList<Song> songs = FXCollections.observableArrayList();
+    // list for storing the currently queued songs
+    public static List<Song> queuedSongs = new ArrayList<>();
+    // ListView for showing the currently queued songs
+    ListView<Song> listView = new ListView<>(songs);
+    // super constructor variables storing the centerPanel and universal mediaPlayer objects
     CenterPanel centerPanel;
     MediaPlayer mediaPlayer;
-    Song loadedSong = null;
-    static double DELAY_MAX_SECONDS = 180;
-    public static List<Song> queuedSongs = new ArrayList<>();
-    ObservableList<Song> songs = FXCollections.observableArrayList();
-    ListView<Song> listView = new ListView<>(songs);
+
+    /**
+     * this panel handles the backend of playing, pausing and controlling the songs in queue
+     * @param primary primaryStage
+     */
     public QueuePanel(PrimaryStage primary) {
         super(primary);
         this.centerPanel = primary.centerPanel;
@@ -35,23 +49,38 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
         initTicking();
     }
 
+    // --------- Buttons ---------
+    // button for adding the currently selected song into queue
     ShyvvButton addToQueue = new ShyvvButton("Add to Queue", e -> {
+        // simply add this song into the list
         queuedSongs.add(new Song(MusicPanel.getSelectedSong()));
+        // update the list
         updateList();
     });
+    // button for adding the currently selected song into queue with a timestamp
     ShyvvButton addToQueueWithTimestamp = new ShyvvButton("Add to Queue - Timestamp", e -> {
+        // call the function which controls queues with timestamp
         queueTimestampDialog(new Song(MusicPanel.getSelectedSong()));
     });
+    // button for adding the currently selected song into queue with a delay
     ShyvvButton addToQueueWithDelay = new ShyvvButton("Add to Queue - Delay", e -> {
+        // call the function which controls queues with delays beforehand
         queueDelayDialog(new Song(MusicPanel.getSelectedSong()));
     });
 
+    /**
+     * init function
+     */
     private void initialize() {
+        // create a VBox for storing the queue and ListView
         VBox queueSidebar = new VBox(new Label("Queue"), listView);
-        HBox queueButtons = new HBox(addToQueue, addToQueueWithTimestamp, addToQueueWithDelay);
+        // create an HBox for storing the different queue addition buttons
+        HBox queueButtons = new HBox(10, addToQueue, addToQueueWithTimestamp, addToQueueWithDelay);
+        // set the alignment for the queue buttons
+        queueButtons.setAlignment(Pos.CENTER);
 
-        // I sort of understand how these cell factories work now, big emphasis on sort of
-        // I see it as an overcomplicated array iterator
+        // I UNDERSTAND CELL FACTORIES NOW
+        // set the cell factory for the list view to show the songs queued, and the different states they're in
         listView.setCellFactory(lv -> new ListCell<Song>() {
             @Override
             protected void updateItem(Song song, boolean empty) {
@@ -63,38 +92,56 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
                 } else {
                     // this.getIndex() is actually a lifesaver function oh my god :pray:
                     // set the value which the listView will display for this instance of the song object
+                    // create a base String to be concatenated
                     String queueDisplayString = "";
+                    // make the song that's currently playing have a > symbol next to it
                     if(this.getIndex() == 0) {
                         queueDisplayString += "> ";
                     } else {
+                        // make the song that's in queue have a number beside of it
                         queueDisplayString += this.getIndex()+". ";
                     }
 
+                    // if the song is a delay, show the appropriate formatting in queue
                     if(song.isDelay()) {
                         queueDisplayString += "Delay: "+format(song.getDelayTime());
                     }else if(song.getStartTime().toSeconds() != 0) {
+                        // if the song has a timestamp, show the appropriate formatting in queue
+                        // in this case it's the timestamp to the right of the song name
                         queueDisplayString += song.getSongTitle();
                         queueDisplayString += " ("+format(song.getStartTime())+")";
                     } else {
+                        // elsewise the song is simply in queue, just show its name
                         queueDisplayString += song.getSongTitle();
                     }
 
+                    // set the text of the ListCell to the concatenated String
                     setText(queueDisplayString);
                 }
             }
         });
 
+        // set the padding for the listView
         listView.setPadding(new Insets(10));
+        // add the queue buttons to the CENTER panel
         centerPanel.getPane().getChildren().add(queueButtons);
 
+        // add the queue sidebar to THIS panel
         this.panel.getChildren().add(queueSidebar);
     }
 
+    /**
+     * updates the listView by clearing the listView and adding all the elements in queuedSongs to the listView (effectively synchronizing the two)
+     */
     private void updateList() {
         songs.clear();
         songs.addAll(queuedSongs);
     }
 
+    /**
+     * loads the song in the arguements
+     * @param song the song to be loaded by the universal mediaPlayer
+     */
     public void loadSong(Song song) {
         loadedSong = song;
         // dispose of the old mediaPlayer to prevent issues
@@ -152,6 +199,7 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
 
         MediaPlayer tempMediaPlayer = new MediaPlayer(song.getMedia());
         tempMediaPlayer.setOnReady(() -> {
+            timestamp.set(tempMediaPlayer.getTotalDuration().multiply(0.5));
             queueTimestampText(timeValueLabel, tempMediaPlayer, 0.5);
             timestampSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
                 timestamp.set(tempMediaPlayer.getTotalDuration().multiply(newVal.doubleValue()));
@@ -170,6 +218,7 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
             return null;
         });
 
+        timestampDialog.getDialogPane().getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         timestampDialog.show();
     }
     public void queueTimestampText(Label label, MediaPlayer tempMediaPlayer, double sliderValue) {
@@ -207,7 +256,7 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
 
         delayDialog.setResultConverter(button -> {
             if (button == ButtonType.OK) {
-                queuedSongs.add(new Song(song.getDirectory(), tempMediaPlayer.getTotalDuration().subtract(delay.get()), delay.get(), true));
+                queuedSongs.add(new Song(song.getDirectory(), tempMediaPlayer.getTotalDuration().subtract(delay.get()), delay.get()));
                 queuedSongs.add(new Song(song.getDirectory()));
                 updateList();
                 return delaySlider.getValue();
@@ -215,6 +264,7 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
             return null;
         });
 
+        delayDialog.getDialogPane().getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         delayDialog.show();
     }
     public void delayDisplayText(Label label, double sliderValue) {
