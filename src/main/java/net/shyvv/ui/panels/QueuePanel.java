@@ -1,13 +1,11 @@
 package net.shyvv.ui.panels;
 
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.util.Duration;
 import net.shyvv.core.ShyvvButton;
@@ -19,12 +17,13 @@ import net.shyvv.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
     CenterPanel centerPanel;
     MediaPlayer mediaPlayer;
     Song loadedSong = null;
+    static double DELAY_MAX_SECONDS = 180;
     public static List<Song> queuedSongs = new ArrayList<>();
     ObservableList<Song> songs = FXCollections.observableArrayList();
     ListView<Song> listView = new ListView<>(songs);
@@ -42,10 +41,9 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
     });
     ShyvvButton addToQueueWithTimestamp = new ShyvvButton("Add to Queue - Timestamp", e -> {
         queueTimestampDialog(new Song(MusicPanel.getSelectedSong()));
-        updateList();
     });
     ShyvvButton addToQueueWithDelay = new ShyvvButton("Add to Queue - Delay", e -> {
-        queuedSongs.add(new Song(MusicPanel.getSelectedSong()));
+        queueDelayDialog(new Song(MusicPanel.getSelectedSong()));
     });
 
     private void initialize() {
@@ -65,7 +63,23 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
                 } else {
                     // this.getIndex() is actually a lifesaver function oh my god :pray:
                     // set the value which the listView will display for this instance of the song object
-                    setText(this.getIndex()+1 +". "+ song.getSongTitle());
+                    String queueDisplayString = "";
+                    if(this.getIndex() == 0) {
+                        queueDisplayString += "> ";
+                    } else {
+                        queueDisplayString += this.getIndex()+". ";
+                    }
+
+                    if(song.isDelay()) {
+                        queueDisplayString += "Delay: "+format(song.getDelayTime());
+                    }else if(song.getStartTime().toSeconds() != 0) {
+                        queueDisplayString += song.getSongTitle();
+                        queueDisplayString += " ("+format(song.getStartTime())+")";
+                    } else {
+                        queueDisplayString += song.getSongTitle();
+                    }
+
+                    setText(queueDisplayString);
                 }
             }
         });
@@ -101,6 +115,8 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
 
             // load the song respectively
             centerPanel.loadedSong.setText("Loaded: " + song.getSongTitle());
+
+            mediaPlayer.seek(song.getStartTime());
         });
 
         // some more JavaFX listener magic, not really sure how it works, but it does
@@ -118,19 +134,13 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
     public void queueTimestampDialog(Song song) {
         Dialog<Double> timestampDialog = new Dialog<>();
         timestampDialog.setTitle("Set Queue Timestamp");
-
+        // IntelliJ made it accessible so it was accessible within the lambda expression listener thingymajig
+        AtomicReference<Duration> timestamp = new AtomicReference<>();
         Slider timestampSlider = new Slider(0, 1, 0.5);
-        Label valueLabel = new Label("--- / ---");
+        Label songNameLabel = new Label(song.getSongTitle());
+        Label timeValueLabel = new Label("--- / ---");
 
-        MediaPlayer tempMediaPlayer = new MediaPlayer(song.getMedia());
-        tempMediaPlayer.setOnReady(() -> {
-            queueTimestampText(valueLabel, tempMediaPlayer, 0.5);
-            timestampSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
-                queueTimestampText(valueLabel, tempMediaPlayer, newVal.doubleValue());
-            });
-        });
-
-        VBox content = new VBox(10, timestampSlider, valueLabel);
+        VBox content = new VBox(10, timestampSlider, songNameLabel, timeValueLabel);
         content.setPadding(new Insets(10));
 
         timestampDialog.getDialogPane().setContent(content);
@@ -138,26 +148,78 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
                 ButtonType.OK,
                 ButtonType.CANCEL
         );
+        timestampDialog.getDialogPane().lookupButton(ButtonType.OK).setDisable(true);
+
+        MediaPlayer tempMediaPlayer = new MediaPlayer(song.getMedia());
+        tempMediaPlayer.setOnReady(() -> {
+            queueTimestampText(timeValueLabel, tempMediaPlayer, 0.5);
+            timestampSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+                timestamp.set(tempMediaPlayer.getTotalDuration().multiply(newVal.doubleValue()));
+                queueTimestampText(timeValueLabel, tempMediaPlayer, newVal.doubleValue());
+            });
+            timestampDialog.getDialogPane().lookupButton(ButtonType.OK).setDisable(false);
+        });
+
 
         timestampDialog.setResultConverter(button -> {
             if (button == ButtonType.OK) {
+                queuedSongs.add(new Song(song.getDirectory(), timestamp.get()));
+                updateList();
                 return timestampSlider.getValue();
             }
             return null;
         });
 
-
-        Optional<Double> result = timestampDialog.showAndWait();
-        result.ifPresent(value -> {
-            mediaPlayer.setVolume(value);
-        });
-        queuedSongs.add(new Song(MusicPanel.getSelectedSong()));
-        updateList();
+        timestampDialog.show();
     }
-
     public void queueTimestampText(Label label, MediaPlayer tempMediaPlayer, double sliderValue) {
         Duration selectedTime = tempMediaPlayer.getTotalDuration().multiply(sliderValue);
         label.setText(format(selectedTime) + " / " + format(tempMediaPlayer.getTotalDuration()));
+    }
+
+    public void queueDelayDialog(Song song) {
+        Dialog<Double> delayDialog = new Dialog<>();
+        delayDialog.setTitle("Set Playtime Delay");
+        // IntelliJ made it an AtomicReference so it was accessible within the lambda expression listener thingymajig
+        AtomicReference<Duration> delay = new AtomicReference<>(new Duration(DELAY_MAX_SECONDS*1000/6));
+        Slider delaySlider = new Slider(0, DELAY_MAX_SECONDS*1000 , DELAY_MAX_SECONDS*1000/6);
+
+        Label timeValueLabel = new Label("Delay: 0:30");
+
+        VBox content = new VBox(10, delaySlider, timeValueLabel);
+        content.setPadding(new Insets(10));
+
+        delayDialog.getDialogPane().setContent(content);
+        delayDialog.getDialogPane().getButtonTypes().addAll(
+                ButtonType.OK,
+                ButtonType.CANCEL
+        );
+        delayDialog.getDialogPane().lookupButton(ButtonType.OK).setDisable(true);
+
+        MediaPlayer tempMediaPlayer = new MediaPlayer(song.getMedia());
+        tempMediaPlayer.setOnReady(() -> {
+            delaySlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+                delay.set(new Duration(newVal.doubleValue()));
+                delayDisplayText(timeValueLabel, newVal.doubleValue());
+            });
+            delayDialog.getDialogPane().lookupButton(ButtonType.OK).setDisable(false);
+        });
+
+        delayDialog.setResultConverter(button -> {
+            if (button == ButtonType.OK) {
+                queuedSongs.add(new Song(song.getDirectory(), tempMediaPlayer.getTotalDuration().subtract(delay.get()), delay.get(), true));
+                queuedSongs.add(new Song(song.getDirectory()));
+                updateList();
+                return delaySlider.getValue();
+            }
+            return null;
+        });
+
+        delayDialog.show();
+    }
+    public void delayDisplayText(Label label, double sliderValue) {
+        Duration selectedTime = new Duration(sliderValue);
+        label.setText("Delay: " + format(selectedTime));
     }
 
     public void finishSong() {

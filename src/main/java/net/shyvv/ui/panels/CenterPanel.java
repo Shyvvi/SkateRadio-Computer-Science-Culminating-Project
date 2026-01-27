@@ -1,12 +1,11 @@
 package net.shyvv.ui.panels;
 
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import javafx.scene.media.MediaPlayer;
-import javafx.stage.Stage;
 import javafx.util.Duration;
 import net.shyvv.core.AnimatedString;
 import net.shyvv.core.ShyvvButton;
@@ -57,6 +56,7 @@ public class CenterPanel extends ShyvvPanel implements Ticking, StringUtils {
 
         volumeSlider = new Slider(0, 1, 1);
         volumeSlider.setPrefWidth(120);
+        volumeSlider.setPrefHeight(20);
 
         playtimeLabel = new Label(NULL_TIME);
         loadedSong = new Label(NO_FILE);
@@ -75,8 +75,15 @@ public class CenterPanel extends ShyvvPanel implements Ticking, StringUtils {
 
         HBox controls = new HBox(10, lastSongButton, playButton, nextSongButton);
         HBox volumeBox = new HBox(10, new Label("Volume"), volumeSlider);
+        panel.setAlignment(Pos.CENTER);
+        panel.getChildren().addAll(controls, playbackSlider, playtimeLabel, loadedSong, volumeBox);
+        panel.setSpacing(30);
 
-        panel.getChildren().addAll(controls, playbackSlider, playtimeLabel, volumeBox, loadedSong);
+        for(Node node : panel.getChildren()) {
+            if(node instanceof HBox h) {
+                h.setAlignment(Pos.CENTER);
+            }
+        }
     }
 
     public void play() {

@@ -54,6 +54,7 @@ public class MusicPanel extends ShyvvPanel implements Ticking {
 
         VBox musicSidebar = new VBox(refreshDirectoryButton, new Label("Songs"), treeView);
         treeView.setPadding(new Insets(10));
+        treeView.setPrefHeight(800);
 
         this.panel.getChildren().add(musicSidebar);
         FileManager.getDirectories(FileManager.getSystemMusicDirectory());

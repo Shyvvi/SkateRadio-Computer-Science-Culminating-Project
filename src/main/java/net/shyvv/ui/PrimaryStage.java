@@ -18,7 +18,6 @@ import net.shyvv.core.ShyvvButton;
 import net.shyvv.ui.panels.CenterPanel;
 import net.shyvv.ui.panels.MusicPanel;
 import net.shyvv.ui.panels.QueuePanel;
-import net.shyvv.util.FileManager;
 
 public class PrimaryStage {
     public MediaPlayer mediaPlayer;
@@ -44,7 +43,7 @@ public class PrimaryStage {
         musicPanel.getPane().setPadding(new Insets(10));
         queuePanel.getPane().setPadding(new Insets(10));
 
-        mainPane.setDividerPositions(0.25, 0.85);
+        mainPane.setDividerPositions(0.33, 0.66);
 
         Rectangle2D screenSize = Screen.getPrimary().getBounds();
         Scene scene = new Scene(mainPane, screenSize.getWidth()*0.9, screenSize.getHeight()*0.9);
