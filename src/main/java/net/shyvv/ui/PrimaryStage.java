@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.SplitPane;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.MediaPlayer;
@@ -18,6 +19,8 @@ import net.shyvv.core.ShyvvButton;
 import net.shyvv.ui.panels.CenterPanel;
 import net.shyvv.ui.panels.MusicPanel;
 import net.shyvv.ui.panels.QueuePanel;
+
+import java.awt.*;
 
 public class PrimaryStage {
     public MediaPlayer mediaPlayer;
@@ -49,6 +52,8 @@ public class PrimaryStage {
         Scene scene = new Scene(mainPane, screenSize.getWidth()*0.9, screenSize.getHeight()*0.9);
         scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
+
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/assets/skateradio_icon.png")));
         stage.setTitle(App.DISPLAY_NAME);
         stage.setScene(scene);
         stage.show();
