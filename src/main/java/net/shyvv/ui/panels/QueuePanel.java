@@ -292,69 +292,117 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
         // disable the OK button by default (until the mediaPlayer has loaded the song)
         delayDialog.getDialogPane().lookupButton(ButtonType.OK).setDisable(true);
 
-
+        // create a temporary media player to get information about the song
         MediaPlayer tempMediaPlayer = new MediaPlayer(song.getMedia());
+        // create a listener for when the mediaPlayer loads
         tempMediaPlayer.setOnReady(() -> {
+            // create a listener for the slider in the delay dialogue box
             delaySlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+                // set the value of the delay to the value of the slider and set the text
                 delay.set(new Duration(newVal.doubleValue()));
                 delayDisplayText(timeValueLabel, newVal.doubleValue());
             });
+            // enable the OK button
             delayDialog.getDialogPane().lookupButton(ButtonType.OK).setDisable(false);
         });
 
+        // get the result for when the dialogue is closed
         delayDialog.setResultConverter(button -> {
+            // if the OK button is pressed
             if (button == ButtonType.OK) {
+                // add both a song which acts as a delay and the actual song afterwards into the queue
                 queuedSongs.add(new Song(song.getDirectory(), tempMediaPlayer.getTotalDuration().subtract(delay.get()), delay.get()));
                 queuedSongs.add(new Song(song.getDirectory()));
+                // update the list and return the value of the slider
                 updateList();
                 return delaySlider.getValue();
             }
             return null;
         });
 
+        // set the CSS of the dialog to the css of the rest of the software
         delayDialog.getDialogPane().getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        // show the dialog
         delayDialog.show();
     }
+
+    /**
+     * Sets the label's text used in delayed queue
+     * @param label the label to set the text for
+     * @param sliderValue the value of the slider
+     */
     public void delayDisplayText(Label label, double sliderValue) {
         Duration selectedTime = new Duration(sliderValue);
         label.setText("Delay: " + format(selectedTime));
     }
 
+    /**
+     * called whenever a song finishes, controls playing the next song in queue and finishing the queue
+     */
     public void finishSong() {
+        // if the last song was played in queue
         if(queuedSongs.toArray().length == 1) {
+            // set the song text to being playback finished
             centerPanel.loadedSong.setText("Playback Finished");
+            // stop and dispose of the mediaPlayer entirely
             mediaPlayer.stop();
             mediaPlayer.dispose();
             mediaPlayer = null;
+            // set the isPlaying boolean to paused
             centerPanel.pause();
+            // clear the queuedSongs list
             queuedSongs.clear();
+            // set the playbackSlider to being disabled, it should only be active when playing
             centerPanel.playbackSlider.setDisable(true);
+            // update the list
             updateList();
         } else {
+            // if there are more songs in queue, remove the current song in queue and load then play the next song in queue
             queuedSongs.removeFirst();
             loadSong(queuedSongs.getFirst());
             mediaPlayer.play();
+            // update the list
             updateList();
         }
     }
 
+    /**
+     * returns a String for the formatted time display between two durations
+     * @param current the current duration (smaller one)
+     * @param total the total duration (larger one)
+     * @return a string showing the formated version of both durations
+     */
     public String getPlaytimeDisplay(Duration current, Duration total) {
         return format(current) + " / " + format(total);
     }
 
+    /**
+     * use this ticking function as it is on the thread where JavaFX elements CANT be modified
+     * this is only used for background processes
+     * refer to the core/Ticking for more info
+     */
     @Override
     public void tick() {
+        // if there are songs in queued songs and the first song in the array hasn't been loaded
         if(!queuedSongs.isEmpty() && loadedSong != queuedSongs.getFirst()) {
+            // load the song
             loadSong(queuedSongs.getFirst());
         }
     }
 
+    /**
+     * use this ticking function as it is on the thread where JavaFX elements can be modified
+     * refer to the core/Ticking for more info
+     */
     @Override
     public void tickThreadUI() {
+        // sync this mediaPlayer to the one in centerPanel (this is a very bandaid fix but it works)
         centerPanel.mediaPlayer = this.mediaPlayer;
         if(mediaPlayer != null) {
+            // set the appropriate time display if the mediaPlayer isn't null
             centerPanel.playtimeLabel.setText(getPlaytimeDisplay(mediaPlayer.getCurrentTime(), mediaPlayer.getTotalDuration()));
         } else {
+            // otherwise set it to the default value for the time display
             centerPanel.playtimeLabel.setText(CenterPanel.NULL_TIME);
         }
     }
