@@ -121,6 +121,8 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
             }
         });
 
+        // set the height of the queue panel
+        listView.setPrefHeight(1000);
         // set the padding for the listView
         listView.setPadding(new Insets(10));
         // add the queue buttons to the CENTER panel
@@ -162,88 +164,134 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
 
             // load the song respectively
             centerPanel.loadedSong.setText("Loaded: " + song.getSongTitle());
-
+            // if the song has a timestamp, set the appropriate starting time
             mediaPlayer.seek(song.getStartTime());
         });
 
-        // some more JavaFX listener magic, not really sure how it works, but it does
+        // some more JavaFX listener magic, not really sure how it works, but it does; thanks stackoverflow
+        // apologies for spaghetti code but this controls the playback slider being set to the value of the song
         mediaPlayer.currentTimeProperty().addListener((obs, oldTime, newTime) -> {
+            // make sure that the playback slider isn't being dragged or having its value changed
             if (!centerPanel.playbackSlider.isValueChanging() && !centerPanel.playbackSlider.isPressed()) {
+                // set the value of the playback slider to the duration of the song
                 centerPanel.playbackSlider.setValue(newTime.toSeconds());
             }
         });
 
+        // method reference for calling finishSong() when a song finishes playing
         mediaPlayer.setOnEndOfMedia(this::finishSong);
 
+        // set the volume of the mediaPlayer to the value of the volume slider
         mediaPlayer.setVolume(centerPanel.volumeSlider.getValue());
     }
 
+    /**
+     * handles the dialog which appears whenever the queue - timestamp button is pressed
+     * @param song the song which is to be put in queue with timestamp
+     */
     public void queueTimestampDialog(Song song) {
+        // create the dialog and set the title
         Dialog<Double> timestampDialog = new Dialog<>();
         timestampDialog.setTitle("Set Queue Timestamp");
         // IntelliJ made it accessible so it was accessible within the lambda expression listener thingymajig
         AtomicReference<Duration> timestamp = new AtomicReference<>();
+        // create the timestamp slider, song and time value labels for UI
         Slider timestampSlider = new Slider(0, 1, 0.5);
         Label songNameLabel = new Label(song.getSongTitle());
         Label timeValueLabel = new Label("--- / ---");
 
+        // store all of these into the same VBox, and add padding to the elements
         VBox content = new VBox(10, timestampSlider, songNameLabel, timeValueLabel);
         content.setPadding(new Insets(10));
 
+        // set the content of the dialog box to the content of the VBox
         timestampDialog.getDialogPane().setContent(content);
+        // create the OK and CANCEL buttons
         timestampDialog.getDialogPane().getButtonTypes().addAll(
                 ButtonType.OK,
                 ButtonType.CANCEL
         );
+        // set the OK button to be disabled, it is re-enabled after the song has been loaded
+        // this is to prevent unnecessary exceptions as the queue functions are pretty sensitive
         timestampDialog.getDialogPane().lookupButton(ButtonType.OK).setDisable(true);
 
+        // create a temporary media player to get information about the song
         MediaPlayer tempMediaPlayer = new MediaPlayer(song.getMedia());
+        // create a listener for when the mediaPlayer loads
         tempMediaPlayer.setOnReady(() -> {
+            // set the default value of the timestamp (50% of the song's total duration)
             timestamp.set(tempMediaPlayer.getTotalDuration().multiply(0.5));
+            // set the default text for the timestamp label
             queueTimestampText(timeValueLabel, tempMediaPlayer, 0.5);
+            // AFTER the mediaPlayer has loaded, create a listener for the timestampSlider
             timestampSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
+                // when the slider is used, set the timestamp and timestamp label accordingly
                 timestamp.set(tempMediaPlayer.getTotalDuration().multiply(newVal.doubleValue()));
                 queueTimestampText(timeValueLabel, tempMediaPlayer, newVal.doubleValue());
             });
             timestampDialog.getDialogPane().lookupButton(ButtonType.OK).setDisable(false);
         });
 
-
+        // some more stackoverflow magic
+        // get the result of the dialog box (CANCEL or OK)
         timestampDialog.setResultConverter(button -> {
+            // if the user clicks ok
             if (button == ButtonType.OK) {
+                // add the song to queue with the designated timestamp and update the list
                 queuedSongs.add(new Song(song.getDirectory(), timestamp.get()));
                 updateList();
+                // also return the slider value but I don't think I used this anywhere
                 return timestampSlider.getValue();
             }
             return null;
         });
 
+        // set the css style of the dialog to the same css file as the one used in the rest of the program
         timestampDialog.getDialogPane().getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        // show the dialog box to the user
         timestampDialog.show();
     }
+
+    /**
+     * Sets the label's text used in queue timestamp
+     * @param label the label to set the text for
+     * @param tempMediaPlayer the mediaPlayer to derive the song duration from
+     * @param sliderValue the value of the slider
+     */
     public void queueTimestampText(Label label, MediaPlayer tempMediaPlayer, double sliderValue) {
         Duration selectedTime = tempMediaPlayer.getTotalDuration().multiply(sliderValue);
         label.setText(format(selectedTime) + " / " + format(tempMediaPlayer.getTotalDuration()));
     }
 
+    /**
+     * handles the dialog which appears whenever the queue - delay button is pressed
+     * @param song the song which is to be put in queue with delay
+     */
     public void queueDelayDialog(Song song) {
+        // create the dialog to be shown to the user and set the name of the dialog box
         Dialog<Double> delayDialog = new Dialog<>();
         delayDialog.setTitle("Set Playtime Delay");
         // IntelliJ made it an AtomicReference so it was accessible within the lambda expression listener thingymajig
         AtomicReference<Duration> delay = new AtomicReference<>(new Duration(DELAY_MAX_SECONDS*1000/6));
+        // create the slider and label with the default values
         Slider delaySlider = new Slider(0, DELAY_MAX_SECONDS*1000 , DELAY_MAX_SECONDS*1000/6);
-
         Label timeValueLabel = new Label("Delay: 0:30");
 
+        // create a VBox which will store the delaySlider and timeValueLabel
         VBox content = new VBox(10, delaySlider, timeValueLabel);
+        // set the padding of the content
         content.setPadding(new Insets(10));
 
+        // set the content of the dialog
         delayDialog.getDialogPane().setContent(content);
+        // add the respective buttons of the dialog
         delayDialog.getDialogPane().getButtonTypes().addAll(
                 ButtonType.OK,
                 ButtonType.CANCEL
         );
+        // disable the OK button by default (until the mediaPlayer has loaded the song)
         delayDialog.getDialogPane().lookupButton(ButtonType.OK).setDisable(true);
+
 
         MediaPlayer tempMediaPlayer = new MediaPlayer(song.getMedia());
         tempMediaPlayer.setOnReady(() -> {

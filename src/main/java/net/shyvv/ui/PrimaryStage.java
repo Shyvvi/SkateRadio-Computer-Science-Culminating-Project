@@ -1,6 +1,7 @@
 package net.shyvv.ui;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Orientation;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -38,7 +39,8 @@ public class PrimaryStage {
 
         // SplitPane which will split all the other sections of the app into 3 panes
         SplitPane mainPane = new SplitPane();
-        VBox leftPanel = new VBox(queuePanel.getPane(), musicPanel.getPane());
+        SplitPane leftPanel = new SplitPane(queuePanel.getPane(), musicPanel.getPane());
+        leftPanel.setOrientation(Orientation.VERTICAL);
         // ------------------ Build the app ------------------
         mainPane.getItems().addAll(leftPanel, centerPanel.getPane());
 

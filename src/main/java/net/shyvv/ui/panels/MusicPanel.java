@@ -73,11 +73,13 @@ public class MusicPanel extends ShyvvPanel implements Ticking {
             }
         });
 
+
+        // set the height of the queue panel
+        treeView.setPrefHeight(1000);
         // the sidebar which contains the refreshDirectoryButton and the treeView
         VBox musicSidebar = new VBox(refreshDirectoryButton, new Label("Songs"), treeView);
         // set the padding and preferred height for the treeView
         treeView.setPadding(new Insets(10));
-        treeView.setPrefHeight(800);
 
         // add the musicSidebar to the musicPanel
         this.panel.getChildren().add(musicSidebar);

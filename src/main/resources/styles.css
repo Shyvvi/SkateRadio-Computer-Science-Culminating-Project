@@ -4,7 +4,11 @@
     -fx-font-family: "Segoe UI", "Inter", sans-serif;
     -fx-background-color: #000000;
     -fx-text-fill: #ffffff;
-    -fx-font-size: 16px;
+    -fx-font-size: 19px;
+}
+
+.split-pane {
+    -fx-background-color: #000000;
 }
 
 .button {
@@ -24,6 +28,9 @@
 .list-cell, .tree-cell {
     -fx-background-color: transparent;
     -fx-text-fill: #dddddd;
+}
+.list-cell {
+    -fx-font-size: 32px;
 }
 .tree-cell:selected {
     -fx-background-color: #ffffff;
