@@ -13,6 +13,7 @@ public class Song implements StringUtils {
     String fileDirectory;
     Duration startTime = new Duration(0);
     Duration delayTime;
+    boolean isSilenced = false;
     boolean isDelay = false;
 
     /**
@@ -48,12 +49,13 @@ public class Song implements StringUtils {
      * @param startTime the time in which the DELAY will begin playing at
      * @param delayTime the length of the delay
      */
-    public Song(String fileDirectory, Duration startTime, Duration delayTime) {
+    public Song(String fileDirectory, Duration startTime, Duration delayTime, boolean isSilenced) {
         this.fileDirectory = fileDirectory;
         this.startTime = startTime;
         this.delayTime = delayTime;
         // make sure this Song instance is now designated as a delay
         this.isDelay = true;
+        this.isSilenced = isSilenced;
         // just derive the File and Media objects from the fileDirectory
         this.name = new File(fileDirectory).getName();
         this.media = new Media(new File(fileDirectory).toURI().toString());
@@ -65,6 +67,14 @@ public class Song implements StringUtils {
      */
     public String getSongTitle() {
         return name;
+    }
+
+    /**
+     * whether this delay instance is silenced or not
+     * @return whether the delay has sound or not
+     */
+    public boolean isSilenced() {
+        return this.isSilenced;
     }
 
     /**

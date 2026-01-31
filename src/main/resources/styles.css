@@ -32,7 +32,7 @@
 .list-cell {
     -fx-font-size: 32px;
 }
-.tree-cell:selected {
+.tree-cell:selected, .list-cell:selected {
     -fx-background-color: #ffffff;
     -fx-text-fill: #000000;
 }

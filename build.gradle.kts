@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "net.shyvv"
-version = "1.0-SNAPSHOT"
+version = "0.5"
 
 repositories {
     mavenCentral()
