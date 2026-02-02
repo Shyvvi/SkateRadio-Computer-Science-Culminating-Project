@@ -413,7 +413,7 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
         if(selectedSong != null) {
             for (int i = 0; i < queuedSongs.size(); i++) {
                 Song song = queuedSongs.get(i);
-                if(song.getDirectory().equals(selectedSong.getDirectory()) && i+indexAmount != 0 && i+indexAmount < queuedSongs.size()) {
+                if(song.getDirectory().equals(selectedSong.getDirectory()) && i != 0 && i+indexAmount != 0 && i+indexAmount < queuedSongs.size()) {
                     Song targetSong = queuedSongs.get(i + indexAmount);
                     Song movingSong = queuedSongs.get(i);
                     queuedSongs.set(i, targetSong);
