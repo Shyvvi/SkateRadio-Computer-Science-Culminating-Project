@@ -57,10 +57,14 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
         // update the list
         updateList();
     });
+    // button for removing the currently selected song into queue
+    ShyvvButton removeFromQueue = new ShyvvButton("Remove from Queue", e -> {
+        removeSongFromQueue(this.getSelectedSongIndex());
+    });
     // button for adding the currently selected song into queue with a timestamp
     ShyvvButton addToQueueWithTimestamp = new ShyvvButton("Add to Queue - Timestamp", e -> {
         // call the function which controls queues with timestamp
-        queueTimestampDialog(new Song(MusicPanel.getSelectedSong()));
+        queueTimestampDialog(this.getSelectedSong());
     });
     // button for adding the currently selected song into queue with a delay
     ShyvvButton addToQueueWithDelay = new ShyvvButton("Add to Queue - Delay", e -> {
@@ -89,7 +93,7 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
         // set the alignment for the queue buttons
         queueButtons.setAlignment(Pos.CENTER);
         // create an HBox for storing the different queue movement buttons
-        HBox queueMovementButtons = new HBox(10, addToQueue, addToQueueWithTimestamp, addToQueueWithDelay);
+        HBox queueMovementButtons = new HBox(10, addToQueue, addToQueueWithTimestamp, addToQueueWithDelay, removeFromQueue);
         // set the alignment for the queue movement buttons
         queueMovementButtons.setAlignment(Pos.CENTER);
 
@@ -359,6 +363,16 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
         label.setText("Delay: " + format(selectedTime));
     }
 
+    public void removeSongFromQueue(int i) {
+        if(i <= 0) {
+            finishSong();
+        } else {
+            queuedSongs.remove(i);
+        }
+
+        updateList();
+    }
+
     /**
      * called whenever a song finishes, controls playing the next song in queue and finishing the queue
      */
@@ -405,6 +419,10 @@ public class QueuePanel extends ShyvvPanel implements Ticking, StringUtils {
      */
     public Song getSelectedSong() {
         return listView.getSelectionModel().getSelectedItem();
+    }
+
+    public int getSelectedSongIndex() {
+        return listView.getSelectionModel().getSelectedIndex();
     }
 
     public void moveSong(int indexAmount) {
