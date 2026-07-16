@@ -174,7 +174,7 @@ public class CenterPanel extends ShyvvPanel implements Ticking, StringUtils {
         // change the text for the play / pause button accordingly
         if(isPlaying) {
             // use the AnimatedString
-            playButton.setText("Stop");
+            playButton.setText("Pause");
         } else {
             playButton.setText("Play");
         }
